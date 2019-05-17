@@ -17,7 +17,7 @@
 numbers	DCD		-12 , -20
 result	FILL		4
 carry	FILL		8
-masks	DCD		0b00 , 0b11
+		
 		
 		ADR		r0, numbers ;load numbers into memory
 		LDR		r1, [r0], #4
@@ -29,12 +29,10 @@ masks	DCD		0b00 , 0b11
 		MOV		r7, #0 ; temp locations for result
 		MOV		r8, #0 ; temp location for carry.
 		ADR		r0, carry
-		LDR		r9, [r0] ;load mask 00
-		LDR		r10, [r0, #4]  ; load mask 11
 main
 		
-		AND		r11, r2, r9
-		AND		r12, r2, r10
+		AND		r11, r2, #0b00
+		AND		r12, r2, #0b11
 		CMP		r11, r9
 		CMP		r12, r9
 		BEQ		shifter
@@ -43,3 +41,5 @@ after
 		
 		END
 shifter
+		MOV		r7, r7, lsr #1 ; shift product
+		MOV		r2, r2, lsr #1 ; shift multiplier right
