@@ -9,37 +9,106 @@
 		
 		;		Your code here
 		
-		;numbers	DCD		0xA0BCFF0D, 0xFFF0ADEA
-		;result	FILL		8
-		;carry	FILL		4
-		;		todo implement booths multipication algorithm for signed numbers
-		
-numbers	DCD		-12 , -20
-result	FILL		4
-carry	FILL		8
-		
-		
+numbers	DCD		0xA0BCFF0D, 0xFFF0ADEA
+result	FILL		8
+carry	FILL		4
+masks	DCD		0x0000ffff , 0xffff0000
+need		DCD		0x10000
+		ADR		r0, masks ;get masks
+		LDR		r1, [r0], #4 ; load mask 0x0000ffff
+		LDR		r2, [r0] ; load mask 0xffff0000
 		ADR		r0, numbers ;load numbers into memory
-		LDR		r1, [r0], #4
-		LDR		r2, [r0]
-		ADR		r3, result ;load result block into memory
-		MOV		r4, #16 ; create counter
-		MOV		r5 , #0
-		ADR		r6, carry ; load carry memory block
-		MOV		r7, #0 ; temp locations for result
-		MOV		r8, #0 ; temp location for carry.
-		ADR		r0, carry
+		LDR		r3, [r0], #4 ; load mulitpicand
+		LDR		r4, [r0] ; load multiplier
+		
+		MOV		r8, r3, lsr #31 ;get most signifcant bit of multipicand
+		MOV		r9, r4, lsr #31 ; get most signifcant bit of multiplier
+		
+		CMP		r8, #1 ;check bit
+		MVNEQ	r3, r3 ; switch sign if negative 
+		
+		CMP		r9, #1 ; check msb of multiplier 
+		MVNEQ	r4, r4 ; switch sign if negative
+		
+		;place signs on stack for latter use so R8, and R9 can be clear for use
+		STR		r8, [sp, #4]
+		STR		r9 , [sp, #8]
+		
+          MOV       r8, #0  ; clear r8 
+          MOV       r9, #0  ; clear r9
+		
+		AND		r5, r3, r1 ; get bottom half of multipicand
+		AND		r3, r3, r2 ; get top half of multipicand
+		AND		r6, r4, r1 ; get bottom half of multiplier
+		AND		r4, r4, r2 ; get top half of multiplier
+		MOV		r1, r3, lsr #16  ; put top half of multipcand in the right place
+		MOV		r2, r4 , lsr #16   ; put top half of multipiler in right place
+		MOV		r3, r5
+		MOV		r4, r6
+		MOV		r5, #0
+		MOV		r6, #0
+		
+		
+		
+		
 main
+		MOV		r7 , r1 ; move top multipler into generic register
+		MOV		r8, r2 ; move top multicand into generic register
+mul1
+		TST		r7, #1 ; check least siginfcant bit of  generic multiplier
+		ADDNE	r9, r9,r8 ; if 1 add multpicand to result
+		ADDCS	r10,r10, #1 ; add if carry
+		MOV		r8, r8 , lsl #1 ;bit shift multpicand left by 1 bit
+		MOV		r7, r7, lsr #1 ;bit shift multiper right by 1 bit
+		CMP		r7, #0 ; stop at N
+		BNE		mul1
 		
-		AND		r11, r2, #0b00
-		AND		r12, r2, #0b11
-		CMP		r11, r9
-		CMP		r12, r9
-		BEQ		shifter
-after
-		ADDNE	r7, r7,r1 ; if 1 add multpicand to result
+		MOV		r7 , r4 ;move bottom multiplier into generic register
+		MOV		r8, r1 ; move top multicand into generic register
+mul2
+		TST		r7, #1 ; check least siginfcant bit of  generic multiplier
+		ADDNE	r5, r5,r8 ; if 1 add multpicand to result
+		ADDCS	r10,r10, #1 ; add if carry
+		MOV		r8, r8 , lsl #1 ;bit shift multpicand left by 1 bit
+		MOV		r7, r7, lsr #1 ;bit shift multiper right by 1 bit
+		CMP		r7, #0 ; stop at N
+		BNE		mul2
 		
-		END
-shifter
-		MOV		r7, r7, lsr #1 ; shift product
-		MOV		r2, r2, lsr #1 ; shift multiplier right
+		MOV		r7 , r2 ; move bottom multiplicand into generic register
+		MOV		r8, r3 ;top multipler into generic register
+mul3
+		TST		r7, #1 ; check least siginfcant bit of  generic multiplier
+		ADDNE	r6, r6,r8 ; if 1 add multpicand to result
+		ADDCS	r10,r10, #1 ; add if carry
+		MOV		r8, r8 , lsl #1 ;bit shift multpicand left by 1 bit
+		MOV		r7, r7, lsr #1 ;bit shift multiper right by 1 bit
+		CMP		r7, #0 ; stop at N
+		BNE		mul3
+		
+		MOV		r7 , r4 ; move bottom multipcand into generic register
+		MOV		r8, r3 ; move top multicand into generic register
+mul4
+		TST		r7, #1 ; check least siginfcant bit of  generic multiplier
+		ADDNE	r11, r11,r8 ; if 1 add multpicand to result
+		ADDCS	r10,r10, #1 ; add if carry
+		MOV		r8, r8 , lsl #1 ;bit shift multpicand left by 1 bit
+		MOV		r7, r7, lsr #1 ;bit shift multiper right by 1 bit
+		CMP		r7, #0 ; stop at N
+		BNE		mul4
+product
+		ADR		r0, result
+		ADR		r1, carry
+		ADR		r7, need
+		LDR		r7, [r7]
+		
+		
+		ADDS		r5, r5, r6
+		MOV		r12, r5, lsl #16
+		MOV		r5, r5, lsr #16
+		ADDCS	r9,  r9, r7
+		ADDS		r11, r11, r12
+		ADC		r9, r9 , r5
+		STR		r11, [r0] ; store part of result
+		STR		r9, [r0, #4] ; store part of result
+		STR		r10,[r1] ; store collected carries
+		
