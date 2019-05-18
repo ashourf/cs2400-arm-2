@@ -25,17 +25,17 @@ need		DCD		0x10000
 		MOV		r9, r4, lsr #31 ; get most signifcant bit of multiplier
 		
 		CMP		r8, #1 ;check bit
-		MVNEQ	r3, r3 ; switch sign if negative 
+		MVNEQ	r3, r3 ; switch sign if negative
 		
-		CMP		r9, #1 ; check msb of multiplier 
+		CMP		r9, #1 ; check msb of multiplier
 		MVNEQ	r4, r4 ; switch sign if negative
 		
-		;place signs on stack for latter use so R8, and R9 can be clear for use
+		;place	signs on stack for latter use so R8, and R9 can be clear for use
 		STR		r8, [sp, #4]
 		STR		r9 , [sp, #8]
 		
-          MOV       r8, #0  ; clear r8 
-          MOV       r9, #0  ; clear r9
+		MOV		r8, #0  ; clear r8
+		MOV		r9, #0  ; clear r9
 		
 		AND		r5, r3, r1 ; get bottom half of multipicand
 		AND		r3, r3, r2 ; get top half of multipicand
@@ -108,6 +108,19 @@ product
 		ADDCS	r9,  r9, r7
 		ADDS		r11, r11, r12
 		ADC		r9, r9 , r5
+		
+		MOV		r4, r11, lsr #31 ; get msb
+		MOV		r5, r9, lsr #31  ; get msb 
+		
+		LDR		r6, [sp, #4]    ; retrive multipcand msb from stack 
+		LDR		r7, [sp , #8]   ; retrive multiplier msb from stack 
+		
+		CMP		r6, r4 ; check bits
+		MVNEQ	r11,r11 ; flip if it doesn't match the right sign 
+		
+		CMP		r7, r5 ; check bits
+		MVNEQ	r9,r9 ; flip if it doesn't match right sign
+		
 		STR		r11, [r0] ; store part of result
 		STR		r9, [r0, #4] ; store part of result
 		STR		r10,[r1] ; store collected carries
