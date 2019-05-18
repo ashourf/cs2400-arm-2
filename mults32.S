@@ -110,13 +110,14 @@ product
 		ADC		r9, r9 , r5
 		
 		MOV		r4, r11, lsr #31 ; get msb
-		MOV		r5, r9, lsr #31  ; get msb 
+		MOV		r5, r9, lsr #31  ; get msb
 		
-		LDR		r6, [sp, #4]    ; retrive multipcand msb from stack 
-		LDR		r7, [sp , #8]   ; retrive multiplier msb from stack 
+		LDR		r6, [sp, #4]    ; retrive multipcand msb from stack
+		LDR		r7, [sp , #8]   ; retrive multiplier msb from stack
 		
 		CMP		r6, r4 ; check bits
-		MVNEQ	r11,r11 ; flip if it doesn't match the right sign 
+		MVNEQ	r11,r11 ; flip if it doesn't match the right sign
+		ADDEQ	r11, r11, #1
 		
 		CMP		r7, r5 ; check bits
 		MVNEQ	r9,r9 ; flip if it doesn't match right sign
