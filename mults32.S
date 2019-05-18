@@ -26,10 +26,10 @@ need		DCD		0x10000
 		
 		CMP		r8, #1 ;check bit
 		MVNEQ	r3, r3 ; switch sign if negative
-		
+		ADDEQ	r3,r3, #1
 		CMP		r9, #1 ; check msb of multiplier
 		MVNEQ	r4, r4 ; switch sign if negative
-		
+		ADDEQ	r4,r4,#1
 		;place	signs on stack for latter use so R8, and R9 can be clear for use
 		STR		r8, [sp, #4]
 		STR		r9 , [sp, #8]
@@ -121,6 +121,7 @@ product
 		
 		CMP		r7, r5 ; check bits
 		MVNEQ	r9,r9 ; flip if it doesn't match right sign
+		ADDEQ	r9, r9, #1
 		
 		STR		r11, [r0] ; store part of result
 		STR		r9, [r0, #4] ; store part of result
