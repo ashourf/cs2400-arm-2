@@ -116,7 +116,7 @@ product
 		LDR		r6, [sp, #4]    ; retrive multipcand msb from stack
 		LDR		r7, [sp , #8]   ; retrive multiplier msb from stack
 		
-		CMP		r6,r7
+		CMP		r6,r7           ;check sign
 		
 		CMPNE	r6, r4 ; check bits
 		MVNNE	r11,r11 ; flip if it doesn't match the right sign
