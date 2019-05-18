@@ -116,7 +116,7 @@ product
 		LDR		r7, [sp , #8]   ; retrive multiplier msb from stack
 		
 		CMP		r6, r4 ; check bits
-		MVNEQ	r11,r11 ; flip if it doesn't match the right sign
+		MVNNE	r11,r11 ; flip if it doesn't match the right sign
 		ADDEQ	r11, r11, #1
 		
 		CMP		r7, r5 ; check bits
